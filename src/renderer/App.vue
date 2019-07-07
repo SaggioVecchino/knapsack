@@ -48,9 +48,9 @@
         <div id="infosgen">
           <h3>Somme des poids: {{this.objets.reduce((pv, cv) => pv + cv.poids, 0)}}</h3>
           <h3>Somme des valeurs: {{this.objets.reduce((pv, cv) => pv + cv.valeur, 0)}}</h3>
-          <h3>Poids maximal: {{Math.max(...this.objets.map(o=>o.poids))}}</h3>
-          <h3>Valeur maximale: {{Math.max(...this.objets.map(o=>o.valeur))}}</h3>
-          <h3>Densité maximale: {{Math.max(...this.objets.map(o=>o.valeur/o.poids)).toFixed(3)}}</h3>
+          <h3>Poids d'objet maximal: {{Math.max(...this.objets.map(o=>o.poids))}}</h3>
+          <h3>Valeur d'objet maximale: {{Math.max(...this.objets.map(o=>o.valeur))}}</h3>
+          <h3>Densité d'objet maximale: {{Math.max(...this.objets.map(o=>o.valeur/o.poids)).toFixed(3)}}</h3>
         </div>
       </div>
       <div v-if="k01" class="sols">
@@ -248,6 +248,48 @@
                     v-model="tabouUKPRandomInitV"
                   />
                 </label>
+                <label>
+                  <br />Temps d'exécution maximum:
+                  <input type="text" v-model="tabouUKPTimeOuts" />
+                </label>
+              </div>
+            </label>
+          </div>
+          <div>
+            <label class="container">
+              <input type="checkbox" v-model="AGUKPtoBeCalculated" />
+              <p :class="{ notselected: !AGUKPtoBeCalculated }">
+                <b>Algorithme génétique:</b>
+                {{AGUKP}}
+                <br />
+                Time: {{AGUKPt}}ms
+              </p>
+              <span class="checkmark"></span>
+              <div v-show="AGUKPtoBeCalculated">
+                <label>
+                  <br />Taille de la population:
+                  <input type="text" v-model="AGUKPPopulationSize" />
+                </label>
+                <label>
+                  <br />Generation:
+                  <input type="text" v-model="AGUKPGeneration" />
+                </label>
+                <label>
+                  <br />Nombre de rounds initialement:
+                  <input type="text" v-model="AGUKPRunSetting" />
+                </label>
+                <label>
+                  <br />Temps d'exécution maximum:
+                  <input type="text" v-model="AGUKPTimeOuts" />
+                </label>
+                <label>
+                  <br />Pourcentage de mutation:
+                  <input type="text" v-model="AGUKPMutationPercentage" />
+                </label>
+                <label>
+                  <br />maxKTimes:
+                  <input type="text" v-model="AGUKPMaxKTimes" />
+                </label>
               </div>
             </label>
           </div>
@@ -269,6 +311,8 @@ import greedy_weight_UKP from "@/assets/knapsack/heuristique/greedy_weight_UKP";
 import greedy_value_UKP from "@/assets/knapsack/heuristique/greedy_value_UKP";
 import reducedW_UKP from "@/assets/knapsack/heuristique/reducedW_UKP";
 import tabou_UKP from "@/assets/knapsack/heuristique/tabou_UKP";
+import AG_UKP from "@/assets/knapsack/heuristique/AG";
+
 import Objet from "@/components/objet.vue";
 
 import { setInterval, clearInterval } from "timers";
@@ -294,6 +338,7 @@ export default {
       fptasUKPtoBeCalculated: false,
       reducedWUKPtoBeCalculated: true,
       tabouUKPtoBeCalculated: true,
+      AGUKPtoBeCalculated: true,
       k01: false,
       DPK01: "",
       DPK01t: 0,
@@ -324,6 +369,15 @@ export default {
       tabouUKPTailleLT: 7,
       tabouUKPRandomFromVS: false,
       tabouUKPRandomInitV: true,
+      tabouUKPTimeOuts: 10000,
+      AGUKP: "",
+      AGUKPt: 0,
+      AGUKPPopulationSize: 26,
+      AGUKPGeneration: 100,
+      AGUKPRunSetting: 60,
+      AGUKPTimeOuts: 10000,
+      AGUKPMutationPercentage: 0.3,
+      AGUKPMaxKTimes: 10,
       UKPSolutions: [],
       w: 0,
       objets: [],
@@ -352,6 +406,12 @@ export default {
       get() {
         return this.objets.length;
       }
+    },
+    AGUKPTimeOut() {
+      return parseInt(this.AGUKPTimeOuts);
+    },
+    tabouUKPTimeOut() {
+      return parseInt(this.tabouUKPTimeOuts);
     }
   },
   methods: {
@@ -426,7 +486,8 @@ export default {
       nbIterations = 500,
       tailleLT = 7,
       randomFromVS = false,
-      randomInitV = true
+      randomInitV = true,
+      timeOut = 10000
     ) {
       let t0 = new Date().getTime();
       this.tabouUKP = tabou_UKP.UKP(
@@ -438,6 +499,27 @@ export default {
         randomInitV
       ).valeur;
       this.tabouUKPt = new Date().getTime() - t0;
+    },
+    calculateAGUKP(
+      PopulationSize = 26,
+      Generation = 100,
+      RunSetting = 60,
+      timeOut = 10000,
+      MutationPercentage = 0.3,
+      maxKTimes = 10
+    ) {
+      let t0 = new Date().getTime();
+      this.AGUKP = AG_UKP.UKP(
+        this.w,
+        this.objets,
+        PopulationSize,
+        Generation,
+        RunSetting,
+        timeOut,
+        MutationPercentage,
+        maxKTimes
+      );
+      this.AGUKPt = new Date().getTime() - t0;
     },
     calculate() {
       if (this.DPK01toBeCalculated) this.calculateDPK01(this.wantK01Solutions);
@@ -457,7 +539,17 @@ export default {
           this.tabouUKPNbIter,
           this.tabouUKPTailleLT,
           this.tabouUKPRandomFromVS,
-          this.tabouUKPRandomInitV
+          this.tabouUKPRandomInitV,
+          this.tabouUKPTimeOut
+        );
+      if (this.AGUKPtoBeCalculated)
+        this.calculateAGUKP(
+          this.AGUKPPopulationSize,
+          this.AGUKPGeneration,
+          this.AGUKPRunSetting,
+          this.AGUKPTimeOut,
+          this.AGUKPMutationPercentage,
+          this.AGUKPMaxKTimes
         );
     },
     aleatoire(tout = false) {
@@ -508,6 +600,7 @@ export default {
       this.reducedWUKPtoBeCalculated = false;
       this.fptasUKPtoBeCalculated = false;
       this.tabouUKPtoBeCalculated = false;
+      this.AGUKPtoBeCalculated = false;
     },
     selectUKP() {
       this.k01 = false;

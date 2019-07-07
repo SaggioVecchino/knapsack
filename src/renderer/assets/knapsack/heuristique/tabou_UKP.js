@@ -1,5 +1,6 @@
 export default {
-    UKP(W, objets, nbIterations = 5000, tailleLT = 7, randomFromVS = false, randomInitV = true) {
+    UKP(W, objets, nbIterations = 5000, tailleLT = 7, randomFromVS = false, randomInitV = true, timeOut = 10000) {
+        let t0 = new Date().getTime();
         let mesObjets = [...objets]; //Une deepcopy de la liste des objets
         mesObjets.sort((a, b) => b.valeur / b.poids - a.valeur / a.poids); //On ordonne les éléments suivant les densités d'une manière décroissante, pour trouver la solution initiale et pour générer un bon voisinage à chaque étape de l'algorithme
 
@@ -133,6 +134,9 @@ export default {
             maJLT({
                 ...S
             });
+
+            if (new Date().getTime() - t0 > timeOut)
+                return Sopt;
         }
         return Sopt;
     }
