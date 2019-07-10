@@ -496,7 +496,8 @@ export default {
         nbIterations,
         tailleLT,
         randomFromVS,
-        randomInitV
+        randomInitV,
+        timeOut
       ).valeur;
       this.tabouUKPt = new Date().getTime() - t0;
     },
