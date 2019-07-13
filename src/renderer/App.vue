@@ -49,8 +49,11 @@
           <h3>Somme des poids: {{this.objets.reduce((pv, cv) => pv + cv.poids, 0)}}</h3>
           <h3>Somme des valeurs: {{this.objets.reduce((pv, cv) => pv + cv.valeur, 0)}}</h3>
           <h3>Poids d'objet maximal: {{Math.max(...this.objets.map(o=>o.poids))}}</h3>
+          <h3>Poids d'objet minimal: {{Math.min(...this.objets.map(o=>o.poids))}}</h3>
           <h3>Valeur d'objet maximale: {{Math.max(...this.objets.map(o=>o.valeur))}}</h3>
+          <h3>Valeur d'objet minimale: {{Math.min(...this.objets.map(o=>o.valeur))}}</h3>
           <h3>Densité d'objet maximale: {{Math.max(...this.objets.map(o=>o.valeur/o.poids)).toFixed(3)}}</h3>
+          <h3>Densité d'objet minimale: {{Math.min(...this.objets.map(o=>o.valeur/o.poids)).toFixed(3)}}</h3>
         </div>
       </div>
       <div v-if="k01" class="sols">
@@ -582,13 +585,12 @@ export default {
       let el = document.querySelector("#datasetFile");
       if (el.files) {
         let path = el.files[0].path;
-        let dataset = fs
-          .readFileSync(path, { encoding: "utf8" })
-          .split("\n")
+        let file = fs.readFileSync(path, { encoding: "utf8" }).split("\n");
+        this.w = parseInt(file[5].substr(3));
+        this.objets = file
+          .slice(8, -2)
           .map(line => line.split("\t"))
           .map(e => ({ valeur: parseInt(e[1]), poids: parseInt(e[0]) }));
-        this.w = dataset[0].poids;
-        this.objets = dataset.slice(1);
       }
     },
     selectK01() {
@@ -762,5 +764,14 @@ h3 {
   -webkit-transform: rotate(45deg);
   -ms-transform: rotate(45deg);
   transform: rotate(45deg);
+}
+
+p {
+  margin-bottom: -3px;
+  margin-top: 50px;
+}
+
+label {
+  height: 12px;
 }
 </style>
