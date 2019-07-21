@@ -14,4 +14,3 @@ npm run build
 
 
 ```
-# knapsack
